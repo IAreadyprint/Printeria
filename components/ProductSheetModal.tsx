@@ -53,6 +53,10 @@ const ProductSheetModal: React.FC<ProductSheetModalProps> = ({ isOpen, onClose, 
         transform: 'translateZ(0)', // Promotes to a new layer for better performance
     };
 
+    if (lamination === LaminationType.MATTE) {
+        imageStyle.filter = 'saturate(90%) brightness(98%)';
+    }
+
 
     return (
         <Modal onClose={onClose}>
@@ -68,17 +72,26 @@ const ProductSheetModal: React.FC<ProductSheetModalProps> = ({ isOpen, onClose, 
                         />
                         {/* Lamination Effects */}
                         {lamination === LaminationType.GLOSS && (
-                            <div className="absolute inset-0 w-full h-full opacity-40" style={{
-                                background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.2) 40%, rgba(255,255,255,0) 60%)',
-                                transform: 'skewX(-15deg) translateX(-30%)',
-                            }}></div>
+                            <div 
+                                className="absolute inset-0 w-full h-full pointer-events-none" 
+                                style={{
+                                    background: 'linear-gradient(145deg, rgba(255,255,255,0.7) 15%, rgba(255,255,255,0.15) 50%, transparent 65%)',
+                                    transform: 'skewX(-20deg) translateX(-45%)',
+                                    boxShadow: 'inset 0 0 25px 10px rgba(255, 255, 255, 0.2)',
+                                    mixBlendMode: 'plus-lighter',
+                                    opacity: 0.8
+                                }}
+                            />
                         )}
                          {lamination === LaminationType.MATTE && (
-                            <div className="absolute inset-0 w-full h-full opacity-10" style={{
-                                // Subtle noise texture
-                                backgroundImage: 'url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAUVBMVEWFhYWDg4N3d3dtbW17e3t1dXVpaWlrasLLyspfX19sbGxhYWFiYmJjY2NxcXFiYmJjY2NgyJPm483Y3svU2sri4s_e4M7R2s_o5s5A/1A/AAAAL0lEQVRId/3VsQEAMAwDQREDr/wV28eEgIFoGkHPmbwV4e8yV1e11pI1UjNlPZfzkzNPAo8GQAD4JgE2AAAAAElFTkSuQmCC)',
-                                mixBlendMode: 'overlay',
-                            }}></div>
+                            <div 
+                                className="absolute inset-0 w-full h-full pointer-events-none" 
+                                style={{
+                                    // Subtle noise texture
+                                    backgroundImage: 'url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAUVBMVEWFhYWDg4N3d3dtbW17e3t1dXVpaWlrasLLyspfX19sbGxhYWFiYmJjY2NxcXFiYmJjY2NgyJPm483Y3svU2sri4s_e4M7R2s_o5s5A/1A/AAAAL0lEQVRId/3VsQEAMAwDQREDr/wV28eEgIFoGkHPmbwV4e8yV1e11pI1UjNlPZfzkzNPAo8GQAD4JgE2AAAAAElFTkSuQmCC)',
+                                    mixBlendMode: 'overlay',
+                                    opacity: 0.25,
+                                }}></div>
                         )}
 
                     </div>

@@ -255,7 +255,6 @@ function App() {
     const stickerGroupDef = `
         <g id="sticker">
             ${imageDef}
-            <use href="#cut-shape" />
         </g>
     `;
     
