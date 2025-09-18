@@ -1,0 +1,5 @@
+{
+  "name": "Asistente de Imprenta",
+  "description": "Una aplicación web para ayudar con las tareas de mostrador en una imprenta, optimizando la preparación de archivos para corte e impresión con ayuda de IA.",
+  "requestFramePermissions": []
+}
