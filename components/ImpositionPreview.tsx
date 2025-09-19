@@ -5,7 +5,6 @@ interface ImpositionPreviewProps {
     config: DesignConfig;
     image: ImageInfo | null;
     layout: LayoutInfo;
-    onZoom?: () => void;
 }
 
 const SHEET_TEMPLATES = {
@@ -15,16 +14,29 @@ const SHEET_TEMPLATES = {
         markLength: 10, 
         name: 'Planilla Xerox (33x48 cm)'
     },
-    [ProductionMode.PLOTTER_HD]: {
+    [ProductionMode.PLOTTER_EPSON]: {
         width: 600, height: 1500, printableWidth: 500, printableHeight: 1400,
         printableX: 50, printableY: 50,
         markLength: 10,
-        name: 'Pliego Plotter HD (60x150 cm)'
+        name: 'Pliego Plotter EPSON (60x150 cm)'
+    },
+    [ProductionMode.MIMAKI_DTF_UV]: {
+        width: 600, height: 2000, printableWidth: 580, printableHeight: 2000,
+        printableX: 10, printableY: 10,
+        markLength: 0,
+        name: 'Rollo Mimaki DTF UV (60 cm ancho)'
+    },
+    [ProductionMode.MIMAKI_HOLO_UV]: {
+        width: 600, height: 2000, printableWidth: 580, printableHeight: 2000,
+        printableX: 10, printableY: 10,
+        markLength: 0,
+        name: 'Rollo Mimaki HOLO UV (60 cm ancho)'
     }
 };
-const STICKER_SPACING = 2; // mm
 
 const RegistrationMarks: React.FC<{ mode: ProductionMode }> = ({ mode }) => {
+    if (mode === ProductionMode.MIMAKI_DTF_UV || mode === ProductionMode.MIMAKI_HOLO_UV) return null;
+
     const template = SHEET_TEMPLATES[mode];
     const { printableX, printableY, printableWidth, printableHeight, markLength } = template;
     const markColor = "black";
@@ -40,7 +52,7 @@ const RegistrationMarks: React.FC<{ mode: ProductionMode }> = ({ mode }) => {
     ];
 
     const plotterIntermediateMarks = () => {
-        if (mode !== ProductionMode.PLOTTER_HD) return [];
+        if (mode !== ProductionMode.PLOTTER_EPSON) return [];
         
         const y1 = printableY + printableHeight / 3;
         const y2 = printableY + 2 * printableHeight / 3;
@@ -57,40 +69,42 @@ const RegistrationMarks: React.FC<{ mode: ProductionMode }> = ({ mode }) => {
 };
 
 
-const ImpositionPreview: React.FC<ImpositionPreviewProps> = ({ config, layout, onZoom }) => {
+const ImpositionPreview: React.FC<ImpositionPreviewProps> = ({ config, layout }) => {
+    if (!config.mode) return null;
     const template = SHEET_TEMPLATES[config.mode];
-    const term = config.mode === ProductionMode.XEROX ? 'Planilla' : 'Pliego';
+    const isMimaki = config.mode === ProductionMode.MIMAKI_DTF_UV || config.mode === ProductionMode.MIMAKI_HOLO_UV;
+    const term = config.mode === ProductionMode.XEROX ? 'Planilla' : (config.mode === ProductionMode.PLOTTER_EPSON ? 'Pliego' : 'Rollo');
     const { stickersPerSheet } = layout;
     const { bestLayout } = layout;
+    const STICKER_SPACING = isMimaki ? config.stickerSpacing : 2;
 
     const totalBlockWidth = bestLayout.cols * bestLayout.itemW + (bestLayout.cols > 1 ? (bestLayout.cols - 1) * STICKER_SPACING : 0);
     const totalBlockHeight = bestLayout.rows * bestLayout.itemH + (bestLayout.rows > 1 ? (bestLayout.rows - 1) * STICKER_SPACING : 0);
     const xOffset = (template.printableWidth - totalBlockWidth) / 2;
-    const yOffset = (template.printableHeight - totalBlockHeight) / 2;
+    const yOffset = isMimaki ? 0 : (template.printableHeight - totalBlockHeight) / 2;
 
-    const isZoomable = !!onZoom;
+    // For Mimaki, preview the first 200cm, for others, the full sheet.
+    const previewHeight = isMimaki ? Math.min(totalBlockHeight + template.printableY*2, template.height) : template.height;
 
     return (
-        <div>
+        <div className="bg-white p-5 rounded-2xl shadow-lg border border-slate-200">
             <h3 className="text-xl font-bold text-slate-800">Vista Previa de {term}</h3>
             <p className="text-slate-500 mb-4">{template.name}.</p>
             
             <div 
-                className={`p-2 bg-gray-200 rounded-lg overflow-auto border ${isZoomable ? 'cursor-zoom-in' : ''}`}
-                onClick={onZoom}
-                title={isZoomable ? `Ampliar ${term}` : ''}
+                className={`p-2 bg-gray-200 rounded-lg overflow-auto border`}
             >
                 <svg
                     width="100%"
-                    viewBox={`0 0 ${template.width} ${template.height}`}
+                    viewBox={`0 0 ${template.width} ${previewHeight}`}
                     className="bg-white shadow-inner"
-                    style={{ aspectRatio: `${template.width}/${template.height}`}}
+                    style={{ aspectRatio: `${template.width}/${previewHeight}`}}
                 >
                     <rect 
                         x={template.printableX}
                         y={template.printableY}
                         width={template.printableWidth}
-                        height={template.printableHeight}
+                        height={isMimaki ? totalBlockHeight : template.printableHeight}
                         fill="none"
                         stroke="#e2e8f0"
                         strokeWidth="1"
@@ -129,12 +143,15 @@ const ImpositionPreview: React.FC<ImpositionPreviewProps> = ({ config, layout, o
                                 default:
                                     shapeElement = <rect width={bestLayout.itemW} height={bestLayout.itemH} {...shapeProps} />;
                             }
+                            // Don't render shapes outside the preview box for performance
+                            if(y > previewHeight) return null;
+                            
                             return <g key={`${r}-${c}`} transform={`translate(${x}, ${y})`}>{shapeElement}</g>;
                         })
                     ))}
                 </svg>
             </div>
-             <p className="text-xs text-slate-500 mt-2 text-center">La vista previa es una representación a escala de la primera {term.toLowerCase()}.</p>
+             <p className="text-xs text-slate-500 mt-2 text-center">La vista previa es una representación a escala del primer {term.toLowerCase()}.</p>
         </div>
     );
 };

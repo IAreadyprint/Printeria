@@ -1,4 +1,3 @@
-
 import React, { useCallback, useState } from 'react';
 import { UploadIcon } from './Icons';
 
@@ -47,25 +46,28 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileChange }) => {
     };
 
     return (
-        <div 
-            className={`flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${isDragging ? 'border-cyan-500 bg-cyan-50' : 'border-slate-300 hover:border-cyan-400'}`}
-            onDragEnter={handleDragEnter}
-            onDragLeave={handleDragLeave}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            onClick={handleClick}
-        >
-            <UploadIcon className="w-16 h-16 text-slate-400 mb-4" />
-            <p className="text-xl font-semibold text-slate-700">Arrastra y suelta tu archivo aquí</p>
-            <p className="text-slate-500">o haz clic para seleccionarlo</p>
-            <p className="text-xs text-slate-400 mt-4">Recomendado: 150ppp a tamaño real</p>
-            <input 
-                id="file-input"
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleInputChange}
-            />
+        <div className="bg-white p-5 rounded-2xl shadow-lg border border-slate-200">
+             <h2 className="text-2xl font-bold text-slate-800 mb-4">3. Carga tu Diseño</h2>
+            <div 
+                className={`flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${isDragging ? 'border-cyan-500 bg-cyan-50' : 'border-slate-300 hover:border-cyan-400'}`}
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                onClick={handleClick}
+            >
+                <UploadIcon className="w-16 h-16 text-slate-400 mb-4" />
+                <p className="text-xl font-semibold text-slate-700">Arrastra y suelta tu archivo aquí</p>
+                <p className="text-slate-500">o haz clic para seleccionarlo</p>
+                <p className="text-sm text-orange-600 font-semibold mt-4">Recomendado: 150ppp a tamaño real (¡300ppp para DTF UV!)</p>
+                <input 
+                    id="file-input"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleInputChange}
+                />
+            </div>
         </div>
     );
 };

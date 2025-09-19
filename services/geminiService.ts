@@ -32,7 +32,7 @@ export const generateCutPath = async (image: ImageInfo): Promise<string | null> 
     try {
         const imagePart = await fileToGenerativePart(image.file);
         const textPart = {
-            text: `Analiza esta imagen y genera una única ruta SVG (path data) que delinee con precisión el contorno del sujeto principal. La ruta debe estar normalizada a un viewBox de "0 0 100 100". Proporciona únicamente el valor del atributo 'd' de la ruta SVG, sin etiquetas SVG adicionales ni explicaciones. Asegúrate de que la ruta sea una forma cerrada y simple.`
+            text: `Analiza la imagen y genera una única ruta SVG (path data) que delinee el contorno del sujeto principal de forma suave y precisa. La ruta debe ser optimizada, cerrada y normalizada a un viewBox de "0 0 100 100". Proporciona únicamente el valor del atributo 'd' de la ruta SVG, sin etiquetas, comillas ni explicaciones.`
         };
 
         const response: GenerateContentResponse = await ai.models.generateContent({

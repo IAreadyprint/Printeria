@@ -60,10 +60,13 @@ const ProductSheetModal: React.FC<ProductSheetModalProps> = ({ isOpen, onClose, 
 
     return (
         <Modal onClose={onClose}>
-            <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6 w-full max-w-2xl">
+            <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6 w-full max-w-2xl overflow-hidden">
                  <h2 className="text-2xl font-bold text-slate-800 mb-6 text-center">Vista Previa del Producto</h2>
                 
-                <div className="flex justify-center items-center h-[450px]">
+                <div 
+                    className="flex justify-center items-center h-[450px] rounded-md"
+                    style={{ background: 'radial-gradient(circle, #e2e8f0, #cbd5e1)'}}
+                >
                     <div style={stickerStyle}>
                          <img 
                             src={image.src} 

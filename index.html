@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
   <head>
@@ -16,8 +15,56 @@
   }
 }
 </script>
+<style>
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  /* Oculta el cursor por defecto para dar paso al personalizado */
+  body, a, button, input, select, [role="button"], [class*="cursor-pointer"] {
+    cursor: none;
+  }
+  #video-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -2;
+    object-fit: cover;
+  }
+  #video-background video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+  }
+  #video-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #0f172a; /* slate-900 */
+      opacity: 0.6;
+      mix-blend-mode: multiply;
+      z-index: -1;
+  }
+  #root {
+      position: relative;
+      z-index: 1;
+  }
+</style>
 </head>
-  <body class="bg-slate-50">
+  <body class="bg-slate-900">
+    <div id="video-background">
+        <video autoplay loop muted playsinline>
+            <source src="https://cdn.shopify.com/videos/c/o/v/17222c1096334b998f7a980a9b52767f.mp4" type="video/mp4">
+        </video>
+    </div>
+    <div id="video-overlay"></div>
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>
