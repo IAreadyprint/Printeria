@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { DesignConfig, ImageInfo, LayoutInfo, ProductionMode, MimakiInputMode } from '../types';
 import CostCalculator from './CostCalculator';
 import WhatsAppButton from './WhatsAppButton';
@@ -10,50 +10,12 @@ interface SummaryPanelProps {
     layout: LayoutInfo;
     onDownload: (type: 'print' | 'cut') => void;
     isReady: boolean;
+    quoteMessage: string;
+    onOpenEmailModal: () => void;
 }
 
-const SummaryPanel: React.FC<SummaryPanelProps> = ({ config, image, layout, onDownload, isReady }) => {
+const SummaryPanel: React.FC<SummaryPanelProps> = ({ config, image, layout, onDownload, isReady, quoteMessage, onOpenEmailModal }) => {
     const { totalSheets, stickersPerSheet, linearMeters, totalStickersProduced } = layout;
-
-    const quoteMessage = useMemo(() => {
-        if (!isReady) return '';
-        
-        const cmykText = config.backgroundColor ? `\n- Color de Fondo (CMYK): ${config.cmykColor}` : '';
-        let productionDetails = '';
-        let quantityText = `- Cantidad: ${config.quantity} stickers`;
-        const isMimakiDTF = config.mode === ProductionMode.MIMAKI_DTF_UV;
-        const isMimakiHolo = config.mode === ProductionMode.MIMAKI_HOLO_UV;
-
-        if (isMimakiDTF || isMimakiHolo) {
-             if (config.mimakiInputMode === MimakiInputMode.LENGTH) {
-                if(isMimakiHolo) {
-                    quantityText = `- Impresión por metro: ${config.linearLengthCm / 100}m (Aprox. ${totalStickersProduced} stickers)`;
-                } else {
-                    quantityText = `- Impresión por longitud: ${config.linearLengthCm} cm (Aprox. ${totalStickersProduced} stickers)`;
-                }
-            }
-            productionDetails = `- Modo de Producción: ${config.mode}
-- Medianil: ${config.stickerSpacing} mm
-${isMimakiDTF ? `- Contenedor: ${config.container ? 'Sí' : 'No'}` : ''}
-- Formación: Se requieren ${linearMeters?.toFixed(2)} metros lineales.`;
-        } else {
-            productionDetails = `- Modo de Producción: ${config.mode}
-- Acabado: ${config.lamination}
-- Formación: ${stickersPerSheet} por ${config.mode === ProductionMode.XEROX ? 'planilla' : 'pliego'}, ${totalSheets} en total.`;
-        }
-
-        return `¡Hola Printeria! Quisiera cotizar el siguiente pedido de stickers:
-- Imagen: ${image?.file.name}
-${quantityText}
-- Medidas: ${config.width} x ${config.height} cm
-- Forma de Corte: ${config.shape}${cmykText}
-${productionDetails}
-
-Gracias.
-(Gestionado por Maia | GPT.)`;
-    }, [config, image, layout, isReady]);
-
-    const mailtoLink = `mailto:contacto@printeria.mx?subject=Cotizacion%20de%20Stickers%20(Genio%20Grafico)&body=${encodeURIComponent(quoteMessage)}`;
 
     const renderSummaryText = () => {
         if (!config.mode) return null;
@@ -77,8 +39,7 @@ Gracias.
         }
         return (
             <div className="text-center bg-cyan-50 p-3 rounded-lg">
-                {/* FIX: Replaced 'class' with 'className' for JSX compatibility. */}
-                <p className="font-semibold text-cyan-800">Caben <span className="text-2xl">{stickersPerSheet}</span> stickers por {config.mode === ProductionMode.XEROX ? 'planilla' : 'pliego'}.</p>
+                <p className="font-semibold text-cyan-800">Caben <span className="className text-2xl">{stickersPerSheet}</span> stickers por {config.mode === ProductionMode.XEROX ? 'planilla' : 'pliego'}.</p>
                 <p className="text-sm text-cyan-700">Necesitarás un total de <span className="font-bold">{totalSheets}</span> {config.mode === ProductionMode.XEROX ? 'planillas' : 'pliegos'} para tu pedido.</p>
             </div>
         );
@@ -119,15 +80,14 @@ Gracias.
                         message={quoteMessage}
                         disabled={!isReady}
                     />
-                     <a 
-                        href={isReady ? mailtoLink : undefined}
+                     <button
+                        onClick={onOpenEmailModal}
+                        disabled={!isReady}
                         className={`w-full flex items-center justify-center px-4 py-2 font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50 transition-colors ${!isReady ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        onClick={(e) => { if (!isReady) e.preventDefault(); }}
-                        aria-disabled={!isReady}
                     >
                         <MailIcon className="w-5 h-5 mr-2" />
                         Enviar por Correo
-                    </a>
+                    </button>
 
 
                 </div>

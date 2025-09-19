@@ -12,6 +12,7 @@ import ImpositionPreview from './components/ImpositionPreview';
 import ProductSheetModal from './components/ProductSheetModal';
 import CustomCursor from './components/CustomCursor';
 import BackgroundRemovalTool from './components/BackgroundRemovalTool';
+import EmailModal from './components/EmailModal';
 
 
 const SHEET_TEMPLATES = {
@@ -139,6 +140,7 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [showMimakiInfoModal, setShowMimakiInfoModal] = useState(false);
   const [isProductSheetModalOpen, setIsProductSheetModalOpen] = useState(false);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [cursorPosition, setCursorPosition] = useState({ x: -100, y: -100 });
   const [cursorVariant, setCursorVariant] = useState<'default' | 'hover'>('default');
   
@@ -174,6 +176,50 @@ function App() {
     }, []);
 
   const layout = useMemo(() => calculateLayout(config), [config]);
+  
+  const isConfigReady = config.mode && config.width > 0 && config.height > 0 && (config.quantity > 0 || config.mimakiInputMode === MimakiInputMode.LENGTH);
+  const isReadyForQuote = isConfigReady && image !== null;
+  const isAnyMimaki = config.mode === ProductionMode.MIMAKI_DTF_UV || config.mode === ProductionMode.MIMAKI_HOLO_UV;
+  
+  const quoteMessage = useMemo(() => {
+        if (!isReadyForQuote) return '';
+        
+        const { stickersPerSheet, totalSheets, linearMeters, totalStickersProduced } = layout;
+        const cmykText = config.backgroundColor ? `\n- Color de Fondo (CMYK): ${config.cmykColor}` : '';
+        let productionDetails = '';
+        let quantityText = `- Cantidad: ${config.quantity} stickers`;
+        const isMimakiDTF = config.mode === ProductionMode.MIMAKI_DTF_UV;
+        const isMimakiHolo = config.mode === ProductionMode.MIMAKI_HOLO_UV;
+
+        if (isMimakiDTF || isMimakiHolo) {
+             if (config.mimakiInputMode === MimakiInputMode.LENGTH) {
+                if(isMimakiHolo) {
+                    quantityText = `- Impresión por metro: ${config.linearLengthCm / 100}m (Aprox. ${totalStickersProduced} stickers)`;
+                } else {
+                    quantityText = `- Impresión por longitud: ${config.linearLengthCm} cm (Aprox. ${totalStickersProduced} stickers)`;
+                }
+            }
+            productionDetails = `- Modo de Producción: ${config.mode}
+- Medianil: ${config.stickerSpacing} mm
+${isMimakiDTF ? `- Contenedor: ${config.container ? 'Sí' : 'No'}` : ''}
+- Formación: Se requieren ${linearMeters?.toFixed(2)} metros lineales.`;
+        } else {
+            productionDetails = `- Modo de Producción: ${config.mode}
+- Acabado: ${config.lamination}
+- Formación: ${stickersPerSheet} por ${config.mode === ProductionMode.XEROX ? 'planilla' : 'pliego'}, ${totalSheets} en total.`;
+        }
+
+        return `¡Hola Printeria! Quisiera cotizar el siguiente pedido de stickers:
+- Imagen: ${image?.file.name}
+${quantityText}
+- Medidas: ${config.width} x ${config.height} cm
+- Forma de Corte: ${config.shape}${cmykText}
+${productionDetails}
+
+Gracias.
+(Gestionado por Maia | GPT.)`;
+    }, [config, image, layout, isReadyForQuote]);
+
 
   const handleFileChange = (file: File) => {
     setError(null);
@@ -427,10 +473,6 @@ function App() {
     }
   };
 
-  const isConfigReady = config.mode && config.width > 0 && config.height > 0 && (config.quantity > 0 || config.mimakiInputMode === MimakiInputMode.LENGTH);
-  const isReadyForQuote = isConfigReady && image !== null;
-  const isAnyMimaki = config.mode === ProductionMode.MIMAKI_DTF_UV || config.mode === ProductionMode.MIMAKI_HOLO_UV;
-
   return (
     <div className="min-h-screen font-sans">
       <CustomCursor position={cursorPosition} variant={cursorVariant} />
@@ -494,6 +536,8 @@ function App() {
                     layout={layout}
                     onDownload={handleDownload}
                     isReady={isReadyForQuote}
+                    quoteMessage={quoteMessage}
+                    onOpenEmailModal={() => setIsEmailModalOpen(true)}
                  />
             </div>
           </div>
@@ -506,6 +550,11 @@ function App() {
           onClose={() => setIsProductSheetModalOpen(false)}
           config={config}
           image={image}
+      />
+      <EmailModal
+        isOpen={isEmailModalOpen}
+        onClose={() => setIsEmailModalOpen(false)}
+        quoteMessage={quoteMessage}
       />
     </div>
   );
